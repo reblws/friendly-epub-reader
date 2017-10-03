@@ -1,29 +1,20 @@
 import React, { Component } from 'react';
 import Dropzone from 'react-dropzone';
 import db from '../db';
-import parseEpub from '../utils/parse-epub';
+import { parseEpub } from '../utils/parse-epub';
 
 class UploadForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       files: [],
-      books: [],
     }
     this.onDrop = this.onDrop.bind(this)
   }
 
-  componentDidMount() {
-    db.table('books')
-      .toArray()
-      .then((books) => {
-        this.setState({ books })
-      })
-  }
-
   onDrop(acceptedFiles) {
     acceptedFiles.forEach(file => {
-      parseEpub(file);
+      parseEpub(file, this.props.loadBooks);
     });
     this.setState({
       files: acceptedFiles,
@@ -45,18 +36,6 @@ class UploadForm extends Component {
           </h2>
           <ul>
             {this.state.files.map(f => <li key={f.name}>{f.name} - {f.size} bytes</li>)}
-          </ul>
-          <ul>
-            {this.state.books.map(({ authors, title, publishedAt }) => (
-              <dl key={title}>
-                <dt>Author</dt>
-                  <dd>{authors}</dd>
-                <dt>Title: </dt>
-                  <dd>{title}</dd>
-                <dt>Publish Date:</dt>
-                  <dd>{publishedAt}</dd>
-              </dl>
-            ))}
           </ul>
         </aside>
       </section>
