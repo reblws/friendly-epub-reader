@@ -14,24 +14,28 @@ function xmlPromise(file) {
   });
 }
 
-function parseEpub(epub) {
+export function parseEpub(epub) {
   // Given an epub file, parse its contents and load it into indexed db
   const reader = new FileReader();
   reader.onload = function(e) {
-    const epubData = unzipEpub(reader.result);
+    const blob = new Blob([e.target.result]);
+    const epubData = unzipEpub(reader.result).catch(e => { console.error(e) });
+    // Using the epubData create an indexedDb entry and then save the file
+    // results as a blob to indexedDB
+    console.log(db);
+    epubData.then(bookId => db.books.where('id').equals(bookId).modify({ blob }));
   }
   reader.readAsArrayBuffer(epub);
 }
 
 function unzipEpub(data) {
   const zip = new JSZip();
-  zip.loadAsync(data)
-    .then(handleEpubData)
-    .catch(e => { throw e });
+  return zip.loadAsync(data)
+    .then(handleEpubData);
 }
 
 /* Returns a structured manifest file from the manifest epub object */
-function handleManifest(manifest) {
+function createManifest(manifest) {
   // Return structured manifest
   const underscoreMapper = ({ _ }) => _;
   const xmlAttributes = ({ $ }) => $;
@@ -46,7 +50,6 @@ function handleManifest(manifest) {
     language: md['dc:language'][0]._,
   }
   const mediaItems = manifest.package.manifest[0].item.map(xmlAttributes);
-  console.log({ mediaItems })
   const toc = manifest.package.spine[0].itemref
     .map(xmlAttributes)
     .map(({ idref }) => mediaItems.find(({ id }) => id === idref));
@@ -57,21 +60,26 @@ function handleManifest(manifest) {
   }
 }
 
-function saveBookToDB(manifest, epubFile) {
-  manifest.toc.forEach(({ id, href }) => {
-    console.log(id, href)
-  })
+// Adds the book data to indexedDB, returns a promise containing the id number
+function saveBookToDB(manifest, epub) {
+  if (db.books) {
+    const chapters = manifest.toc.map(({ id, href }, index) =>
+    Object.keys(epub.files).find(key => key.includes(href))
+  );
+  const bookEntry = { ...manifest.metadata, chapters };
+  console.log(bookEntry);
+  return db.books.put(bookEntry);
+  }
 }
 
 /* Parses the epub data into indexeddb */
-function handleEpubData(zipFile) {
-  const { files } = zipFile;
+function handleEpubData(epub) {
+  const { files } = epub;
   // Manifest is in opf file
   const manifestKey = Object.keys(files).find(s => /\.opf/.test(s))
-  zipFile.file(manifestKey).async('string')
+  return epub.file(manifestKey).async('string')
     .then(xmlPromise)
-    .then(handleManifest)
-    .then(manifest => saveBookToDB(manifest, zipFile))
+    .then(createManifest)
+    .then(manifest => saveBookToDB(manifest, epub))
 }
 
-export default parseEpub;
