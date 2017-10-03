@@ -14,16 +14,21 @@ function xmlPromise(file) {
   });
 }
 
-export function parseEpub(epub) {
+export function parseEpub(epub, callback) {
   // Given an epub file, parse its contents and load it into indexed db
+  // Fires a callback when done
   const reader = new FileReader();
   reader.onload = function(e) {
     const blob = new Blob([e.target.result]);
     const epubData = unzipEpub(reader.result).catch(e => { console.error(e) });
     // Using the epubData create an indexedDb entry and then save the file
     // results as a blob to indexedDB
-    console.log(db);
-    epubData.then(bookId => db.books.where('id').equals(bookId).modify({ blob }));
+    epubData.then(bookId => db.books.where('id').equals(bookId).modify({ blob }))
+      .then(() => {
+        if (callback) {
+          callback();
+        }
+      });
   }
   reader.readAsArrayBuffer(epub);
 }
@@ -67,7 +72,6 @@ function saveBookToDB(manifest, epub) {
     Object.keys(epub.files).find(key => key.includes(href))
   );
   const bookEntry = { ...manifest.metadata, chapters };
-  console.log(bookEntry);
   return db.books.put(bookEntry);
   }
 }
