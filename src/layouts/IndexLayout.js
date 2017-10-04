@@ -17,12 +17,11 @@ class IndexLayout extends Component {
     this.state = { books: [] };
     this.loadBooks = this.loadBooks.bind(this);
     this.deleteBook = this.deleteBook.bind(this);
-    // this.deleteBook = this.deleteBook.bind(this);
   }
 
   componentDidMount() {
     this.loadBooks();
-    document.title = 'Friendly ePub Reader';
+    document.title = 'Friendly EPUB Reader';
   }
 
   deleteBook(id) {

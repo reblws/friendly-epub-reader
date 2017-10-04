@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Confirm, Icon } from 'semantic-ui-react';
 
+// Contains a modal
 class DeleteButton extends React.Component {
   constructor(props) {
     super(props);
@@ -31,13 +32,18 @@ class DeleteButton extends React.Component {
   }
 
   render() {
+    const {
+      deleteBook,
+      ...props,
+    } = this.props;
     return (
       <div>
-        <Button onClick={this.show} color="red" content="Delete" icon="trash" />
+        <Button onClick={this.show} color="red" inverted content="Delete" icon="trash" {...props} />
         <Confirm
           open={this.state.show}
           onCancel={this.handleCancel}
           onConfirm={this.handleConfirm}
+          confirmButton="Delete this book"
         />
       </div>
     );
