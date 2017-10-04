@@ -7,8 +7,12 @@ export function parseEpub(epub, callback) {
   // Fires a callback with the book data as an input
   const reader = new FileReader();
   reader.onload = function() {
+    const blob = new Blob([reader.result]);
     unzipEpub(reader.result)
-      .then(bookDetails => Object.assign({}, bookDetails, { md5: md5(reader.result)}))
+      .then(bookDetails => Object.assign({}, bookDetails, {
+        blob,
+        md5: md5(reader.result),
+      }))
       .then(callback)
       .catch(e => { console.error(e) });
   }
