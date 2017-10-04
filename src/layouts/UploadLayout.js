@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import db from '../db';
-import { parseEpub } from '../utils/parse-epub';
-import UploadForm from '../components/UploadForm';
+import { parseEpub } from '../services/parse-epub';
+import BookUploadForm from '../screens/BookUploadForm';
+import BookDetailsForm from '../screens/BookDetailsForm';
 
 class UploadLayout extends Component {
   constructor(props) {
@@ -12,20 +13,22 @@ class UploadLayout extends Component {
     this.onDrop = this.onDrop.bind(this)
   }
 
-  onDrop(acceptedFiles) {
-    acceptedFiles.forEach(file => {
-      parseEpub(file);
-    });
+  onComponentDidMount() {
+    document.title = 'Upload an ePub | Friendly ePub Reader';
+  }
+
+  onDrop(files) {
     this.setState({
-      files: acceptedFiles,
+      files,
     });
     // Parse the zip here
   }
 
   render() {
-    return (
-      <UploadForm onDrop={this.onDrop} />
-    );
+    const { files } = this.state;
+    return (files.length === 0)
+      ? <BookUploadForm onDrop={this.onDrop} />
+      : <BookDetailsForm files={files} />;
   }
 }
 

@@ -1,37 +1,20 @@
 import JSZip from 'jszip';
 import { parseString } from 'xml2js';
-import db from '../db';
-
-function xmlPromise(file) {
-  return new Promise((resolve, reject) => {
-    parseString(file, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
+import md5 from 'md5';
 
 export function parseEpub(epub, callback) {
   // Given an epub file, parse its contents and load it into indexed db
-  // Fires a callback when done
+  // Fires a callback with the book data as an input
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const blob = new Blob([e.target.result]);
-    const epubData = unzipEpub(reader.result).catch(e => { console.error(e) });
-    // Using the epubData create an indexedDb entry and then save the file
-    // results as a blob to indexedDB
-    epubData.then(bookId => db.books.where('id').equals(bookId).modify({ blob }))
-      .then(() => {
-        if (callback) {
-          callback();
-        }
-      });
+  reader.onload = function() {
+    unzipEpub(reader.result)
+      .then(bookDetails => Object.assign({}, bookDetails, { md5: md5(reader.result)}))
+      .then(callback)
+      .catch(e => { console.error(e) });
   }
   reader.readAsArrayBuffer(epub);
 }
+
 
 function unzipEpub(data) {
   const zip = new JSZip();
@@ -65,18 +48,14 @@ function createManifest(manifest) {
   }
 }
 
-// Adds the book data to indexedDB, returns a promise containing the id number
-function saveBookToDB(manifest, epub) {
-  if (db.books) {
-    const chapters = manifest.toc.map(({ id, href }, index) =>
+function saveBookDetails(manifest, epub) {
+  const chapters = manifest.toc.map(({ id, href }, index) =>
     Object.keys(epub.files).find(key => key.includes(href))
   );
   const bookEntry = { ...manifest.metadata, chapters };
-  return db.books.put(bookEntry);
-  }
+  return bookEntry
 }
 
-/* Parses the epub data into indexeddb */
 function handleEpubData(epub) {
   const { files } = epub;
   // Manifest is in opf file
@@ -84,6 +63,20 @@ function handleEpubData(epub) {
   return epub.file(manifestKey).async('string')
     .then(xmlPromise)
     .then(createManifest)
-    .then(manifest => saveBookToDB(manifest, epub))
+    .then(manifest => saveBookDetails(manifest, epub))
 }
+
+function xmlPromise(file) {
+  return new Promise((resolve, reject) => {
+    parseString(file, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+
 
