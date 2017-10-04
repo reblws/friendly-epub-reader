@@ -8,7 +8,9 @@ import {
   Dimmer,
   Header,
 } from 'semantic-ui-react';
+import { Link, Redirect } from 'react-router-dom';
 import { parseEpub } from '../services/parse-epub';
+import db from '../db';
 
 class BookDetailsForm extends React.Component {
   constructor(props) {
@@ -17,10 +19,13 @@ class BookDetailsForm extends React.Component {
     this.onSubmit = this.onSubmit.bind(this);
     this.onChange = this.onChange.bind(this);
     this.state = {
-      title: '',
-      authors: [],
-      publishedAt: '',
-      language: '',
+      book: {
+        title: '',
+        authors: [],
+        publishedAt: '',
+        language: '',
+      },
+      submitted: false,
     }
   }
 
@@ -30,44 +35,58 @@ class BookDetailsForm extends React.Component {
   }
 
   setBookDetails(book) {
-    this.setState(book);
+    this.setState({ book });
   }
 
   onSubmit() {
-    // Do stuff to validate this.state.bookDetails
-    console.log(this.state);
+    // TODO: Validate properly
+    const isFormValid = true;
+    if (isFormValid) {
+      db.books.put(this.state.book);
+      this.setState({
+        submitted: true,
+      })
+    }
   }
 
   onChange(event) {
     const { name, value } = event.target;
-    const bookDetails = this.state;
     const newValue = name === 'authors'
       ? value.split(',').map(s => s.trim())
       : value;
-    this.setState(Object.assign({}, bookDetails, { [name]: newValue }));
+    const bookDetails = this.state;
+    this.setState({
+      book: Object.assign({}, bookDetails, { [name]: newValue })
+    });
   }
 
   render() {
+    const { submitted } = this.state;
     const {
       authors,
       title,
       subject,
       publishedAt,
       language,
-    } = this.state;
+    } = this.state.book;
     return (
       <Segment>
+        {submitted && <Redirect to="/" />}
         <Header as="h2">Confirm Book Details</Header>
-        <Form>
-          <Form.Field control={Input} onChange={this.onChange} name="title" label="Book Title" value={title}/>
-          <Form.Field control={Input} onChange={this.onChange} name="authors" label="Authors" value={authors} />
-          <Form.Field control={Input} onChange={this.onChange} name="publishedAt" label="Date of Publication" type="date" value={publishedAt} />
-          <Form.Field control={Input} onChange={this.onChange} name="language" label="Language" value={language}/>
-          <Form.Field control={Input} onChange={this.onChange} name="subject" label="Subject Matter" value={subject}/>
-          <Form.Button primary onClick={this.onSubmit}>Submit</Form.Button>
+        <Form onChange={this.onChange}>
+          <Form.Field control={Input} name="title" label="Book Title" value={title}/>
+          <Form.Field control={Input} name="authors" label="Authors" value={authors} />
+          <Form.Field control={Input} name="publishedAt" label="Date of Publication" type="date" value={publishedAt} />
+          <Form.Field control={Input} name="language" label="Language" value={language}/>
+          <Form.Field control={Input} name="subject" label="Subject Matter" value={subject}/>
+          <Form.Group inline>
+            <Form.Button primary onClick={this.onSubmit}>Submit</Form.Button>
+            <Form.Button secondary as={Link} to="/">Cancel</Form.Button>
+          </Form.Group>
         </Form>
       </Segment>
     );
+
   }
 }
 

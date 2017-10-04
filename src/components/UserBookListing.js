@@ -5,17 +5,17 @@ import {
 } from 'semantic-ui-react';
 import BookCard from './BookCard';
 
-export default function UserBookListing({ books }) {
-  console.log(books);
-  return (
-    <Grid columns={4}>
-      <Grid.Row>
-        {books ? books.map((book) => (
-          <Grid.Column key={book.id}>
-            <BookCard book={book} key={book.id} />
-          </Grid.Column>
-        )) : <p>You don&rsqou;t have any books! Why don&rsquo;t you try uploading one</p>}
-      </Grid.Row>
-    </Grid>
-  );
+export default function UserBookListing({ books, deleteBook }) {
+  const booksExist = books.length > 0;
+  return booksExist
+      ? (<Grid columns={4}>
+          <Grid.Row>
+            {books.map((book) => (
+              <Grid.Column key={book.id}>
+                <BookCard book={book} key={book.id} deleteBook={deleteBook(book.id)} />
+              </Grid.Column>
+            ))}
+          </Grid.Row>
+        </Grid>)
+      : <div>You don't have any books! Try uploading one.</div>;
 }

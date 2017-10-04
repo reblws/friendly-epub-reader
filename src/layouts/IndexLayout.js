@@ -16,12 +16,21 @@ class IndexLayout extends Component {
     super(props);
     this.state = { books: [] };
     this.loadBooks = this.loadBooks.bind(this);
+    this.deleteBook = this.deleteBook.bind(this);
     // this.deleteBook = this.deleteBook.bind(this);
   }
 
   componentDidMount() {
     this.loadBooks();
     document.title = 'Friendly ePub Reader';
+  }
+
+  deleteBook(id) {
+    return () => {
+      // Change this to show a modal warning
+      db.books.delete(id);
+      this.loadBooks();
+    }
   }
 
   loadBooks() {
@@ -52,7 +61,7 @@ class IndexLayout extends Component {
             </Menu.Item>
           </Menu.Menu>
         </Menu>
-        <UserBookListing books={this.state.books} />
+        <UserBookListing books={this.state.books} deleteBook={this.deleteBook} />
       </Container>
     );
   }
