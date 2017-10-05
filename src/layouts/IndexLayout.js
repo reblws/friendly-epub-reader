@@ -46,13 +46,12 @@ class IndexLayout extends Component {
     return (
       <Container style={{ marginTop: 10 }}>
         <Header size="huge">Friendly ePub Reader</Header>
-
         <Container text>
           This is a really good website. Hello world, welcome to the friendly ePub reader, an offline-first webapp for managing your ePubs. Why don&rsquo;t you try uploading a book and checking it out! The books are saved offline and with your browser forever.
         </Container>
         <Menu secondary>
           <Menu.Item header>
-            <Header size="big" dividing>Your Books</Header>
+            <Header size="large" dividing>Your Books</Header>
           </Menu.Item>
           <Menu.Menu position="right">
             <Menu.Item name='upload'>

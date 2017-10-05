@@ -13,7 +13,7 @@ class UploadLayout extends Component {
     this.onDrop = this.onDrop.bind(this)
   }
 
-  onComponentDidMount() {
+  componentDidMount() {
     document.title = 'Upload an ePub | Friendly ePub Reader';
   }
 
@@ -21,7 +21,6 @@ class UploadLayout extends Component {
     this.setState({
       files,
     });
-    // Parse the zip here
   }
 
   render() {
