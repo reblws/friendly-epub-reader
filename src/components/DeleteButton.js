@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Confirm, Icon } from 'semantic-ui-react';
+import { Button, Confirm } from 'semantic-ui-react';
 
 // Contains a modal
 class DeleteButton extends React.Component {

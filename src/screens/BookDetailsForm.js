@@ -2,10 +2,7 @@ import React from 'react';
 import {
   Form,
   Input,
-  Button,
-  Loader,
   Segment,
-  Dimmer,
   Header,
 } from 'semantic-ui-react';
 import { Link, Redirect } from 'react-router-dom';
@@ -35,22 +32,6 @@ class BookDetailsForm extends React.Component {
     parseEpub(files[0], this.setBookDetails)
   }
 
-  setBookDetails(book) {
-    // Run hash validation here. Only set state to book if there isn't an
-    // entry in the db that has an equivalent hash.
-    const hashQuery = db.table('books').where('hash').equals(book.hash).count()
-      .then(count => {
-        // Show a message if the file is a duplicate, dont bother up
-        if (count != 0) {
-          this.setState({ isDuplicate: true });
-        } else {
-          this.setState({ book });
-        }
-      })
-      .catch(e => { throw e });
-
-  }
-
   onSubmit() {
     // TODO: Validate properly
     const isFormValid = true;
@@ -58,7 +39,7 @@ class BookDetailsForm extends React.Component {
       db.books.put(this.state.book);
       this.setState({
         submitted: true,
-      })
+      });
     }
   }
 
@@ -71,6 +52,22 @@ class BookDetailsForm extends React.Component {
     this.setState({
       book: Object.assign({}, bookDetails, { [name]: newValue })
     });
+  }
+
+  setBookDetails(book) {
+    // Run hash validation here. Only set state to book if there isn't an
+    // entry in the db that has an equivalent hash.
+    db.table('books').where('hash').equals(book.hash).count()
+      .then(count => {
+        // Show a message if the file is a duplicate, dont bother up
+        if (count !== 0) {
+          this.setState({ isDuplicate: true });
+        } else {
+          this.setState({ book });
+        }
+      })
+      .catch(e => { throw e });
+
   }
 
   render() {

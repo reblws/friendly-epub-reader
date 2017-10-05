@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import db from '../db';
-import { parseEpub } from '../services/parse-epub';
 import BookUploadForm from '../screens/BookUploadForm';
 import BookDetailsForm from '../screens/BookDetailsForm';
 
@@ -9,7 +7,7 @@ class UploadLayout extends Component {
     super(props);
     this.state = {
       files: [],
-    }
+    };
     this.onDrop = this.onDrop.bind(this)
   }
 
