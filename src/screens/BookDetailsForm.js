@@ -26,6 +26,7 @@ class BookDetailsForm extends React.Component {
         language: '',
       },
       submitted: false,
+      isDuplicate: false,
     }
   }
 
@@ -35,7 +36,19 @@ class BookDetailsForm extends React.Component {
   }
 
   setBookDetails(book) {
-    this.setState({ book });
+    // Run hash validation here. Only set state to book if there isn't an
+    // entry in the db that has an equivalent hash.
+    const hashQuery = db.table('books').where('hash').equals(book.hash).count()
+      .then(count => {
+        // Show a message if the file is a duplicate, dont bother up
+        if (count != 0) {
+          this.setState({ isDuplicate: true });
+        } else {
+          this.setState({ book });
+        }
+      })
+      .catch(e => { throw e });
+
   }
 
   onSubmit() {
@@ -61,7 +74,7 @@ class BookDetailsForm extends React.Component {
   }
 
   render() {
-    const { submitted } = this.state;
+    const { submitted, isDuplicate } = this.state;
     const {
       authors,
       title,
@@ -73,7 +86,7 @@ class BookDetailsForm extends React.Component {
       <Segment>
         {submitted && <Redirect to="/" />}
         <Header as="h2">Confirm Book Details</Header>
-        <Form onChange={this.onChange}>
+        {!isDuplicate && <Form onChange={this.onChange}>
           <Form.Field control={Input} name="title" label="Book Title" value={title}/>
           <Form.Field control={Input} name="authors" label="Authors" value={authors} />
           <Form.Field control={Input} name="publishedAt" label="Date of Publication" type="date" value={publishedAt} />
@@ -83,7 +96,8 @@ class BookDetailsForm extends React.Component {
             <Form.Button primary onClick={this.onSubmit}>Submit</Form.Button>
             <Form.Button secondary as={Link} to="/">Cancel</Form.Button>
           </Form.Group>
-        </Form>
+        </Form>}
+        {isDuplicate && <div>Yo you already exist.</div>}
       </Segment>
     );
 
