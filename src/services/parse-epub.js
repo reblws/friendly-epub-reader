@@ -1,17 +1,20 @@
 import JSZip from 'jszip';
 import { parseString } from 'xml2js';
-import md5 from 'md5';
+import SparkMD5 from 'spark-md5';
 
 export function parseEpub(epub, callback) {
-  // Given an epub file, parse its contents and load it into indexed db
+  // Given an epub file, parse its contents and return the book details
   // Fires a callback with the book data as an input
   const reader = new FileReader();
   reader.onload = function() {
     const blob = new Blob([reader.result]);
+    const spark = new SparkMD5.ArrayBuffer();
+    const hash = spark.append(reader.result);
     unzipEpub(reader.result)
+      .then(handleEpubData)
       .then(bookDetails => Object.assign({}, bookDetails, {
         blob,
-        md5: md5(reader.result),
+        hash: hash.end(),
       }))
       .then(callback)
       .catch(e => { console.error(e) });
@@ -19,11 +22,9 @@ export function parseEpub(epub, callback) {
   reader.readAsArrayBuffer(epub);
 }
 
-
 function unzipEpub(data) {
   const zip = new JSZip();
-  return zip.loadAsync(data)
-    .then(handleEpubData);
+  return zip.loadAsync(data);
 }
 
 /* Returns a structured manifest file from the manifest epub object */
