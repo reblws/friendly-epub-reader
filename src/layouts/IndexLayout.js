@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import UploadButton from '../components/UploadButton';
-import BackButton from '../components/BackButton';
-import NavMenu from '../components/NavMenu';
 import UserBookListing from '../components/UserBookListing';
 import db from '../db';
 import {
   Container,
   Header,
-  Divider,
   Menu,
 } from 'semantic-ui-react';
 

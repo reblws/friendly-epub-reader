@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import SparkMD5 from 'spark-md5';
-import { promiseFileReader, promiseXML } from './promises';
+import { promiseFileReader, promiseXML } from './utils';
 
 // func: (FileReader) -> func: (epub) -> BookObject: {}
 export default function epubParser(FileReader = window.FileReader) {
@@ -27,7 +27,7 @@ function createManifest(manifest) {
   const md = manifest.package.metadata[0];
   const metadata = {
     authors: md['dc:creator'].map(underscoreMapper),
-    gutenbergUri: md['dc:identifier'].map(underscoreMapper)[0],
+    uri: md['dc:identifier'].map(underscoreMapper)[0],
     rights: md['dc:rights'][0],
     title: md['dc:title'][0],
     subject: md['dc:subject'][0],
@@ -72,8 +72,6 @@ function unzipEpub(data) {
   const zip = new JSZip();
   return zip.loadAsync(data);
 }
-
-
 
 function handleEpubData(epub) {
   const { files } = epub;

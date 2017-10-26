@@ -6,7 +6,7 @@ import {
   Header,
 } from 'semantic-ui-react';
 import { Link, Redirect } from 'react-router-dom';
-import { parseEpub } from '../services/parse-epub';
+import parseEpub from '../services/parse-epub';
 import db from '../db';
 
 class BookDetailsForm extends React.Component {
@@ -67,7 +67,6 @@ class BookDetailsForm extends React.Component {
         }
       })
       .catch(e => { throw e });
-
   }
 
   render() {
@@ -91,7 +90,7 @@ class BookDetailsForm extends React.Component {
           <Form.Field control={Input} name="subject" label="Subject Matter" value={subject}/>
           <Form.Group inline>
             <Form.Button primary onClick={this.onSubmit}>Submit</Form.Button>
-            <Form.Button secondary as={Link} to="/">Cancel</Form.Button>
+            <Form.Button as={Link} to="/">Cancel</Form.Button>
           </Form.Group>
         </Form>}
         {isDuplicate && <div>Yo you already exist.</div>}

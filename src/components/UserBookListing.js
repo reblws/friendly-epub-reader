@@ -8,7 +8,7 @@ export default function UserBookListing({ books, deleteBook }) {
   const booksExist = books.length > 0;
   return booksExist
       ? (
-        <Card.Group itemsPerRow={4}>
+        <Card.Group itemsPerRow={3}>
           {books.map((book) => (
             <BookCard book={book} key={book.id}
               deleteBook={deleteBook(book.id)} />
