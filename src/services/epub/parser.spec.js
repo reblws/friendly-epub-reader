@@ -1,28 +1,26 @@
 /* eslint-disable */
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 import sinon from 'sinon';
 // import { File } from 'file-api';
 import fs from 'fs';
 import path from 'path';
 import JSZip from 'jszip';
 import epubParser from './parser';
-import { FakeFileReader } from './helper';
+import FakeFileReader from './test/FakeFileReader';
 
-const MOBY_DICK_PATH = path.resolve('./src/test/services/epubs/moby-dick.epub');
-
+const MOBY_DICK_PATH = path.resolve('./src/services/epub/test/moby-dick.epub');
 describe('parse-epub', function() {
   describe('parsing an example epub (Moby Dick)', function() {
     let result;
     let readerSpy = {};
     before(function() {
       const reader = () => new FakeFileReader(readerSpy);
-      const parser = epubParser(reader);
-      result = parser(MOBY_DICK_PATH);
+      result = epubParser(reader)(MOBY_DICK_PATH);
     });
     it('should return the right keys required to make a book object', function() {
       const keys = [
         'authors',
-        'gutenbergUri',
+        'uri',
         'rights',
         'title',
         'subject',
@@ -32,7 +30,7 @@ describe('parse-epub', function() {
         'hash',
         'blob',
       ];
-      result.then((obj) => {
+      return result.then((obj) => {
         expect(obj).to.have.all.keys(keys);
       });
     })
@@ -86,11 +84,10 @@ describe('parse-epub', function() {
     it('should be able to find the table of contents', function() {
       return result.then(({ chapters }) => {
         expect(chapters).to.be.an('array').that.is.not.empty;
-        console.log(chapters);
         expect(chapters).to.satisfy(function (arr) {
-          return arr.every(s => typeof s === 'string');;
-      })
-    })
-
+          return arr.every(s => typeof s === 'string');
+        });
+      });
+    });
   });
 });
