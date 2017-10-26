@@ -15,13 +15,11 @@ describe('parse-epub', function() {
   describe('parsing an example epub (Moby Dick)', function() {
     let result;
     let readerSpy = {};
-
     before(function() {
       const reader = () => new FakeFileReader(readerSpy);
       result = parseEpub(MOBY_DICK_PATH, x => x, reader);
     });
-
-    it('should return the right keys required to make an object', function() {
+    it('should return the right keys required to make a book object', function() {
       const keys = [
         'authors',
         'gutenbergUri',
@@ -30,13 +28,14 @@ describe('parse-epub', function() {
         'subject',
         'publishedAt',
         'language',
+        'chapters',
+        'hash',
+        'blob',
       ];
-      const assertKeysInObject = obj => {
-        expect(obj).to.have.all.keys(...keys);
-      }
-      result.then(assertKeysInObject);
+      result.then((obj) => {
+        expect(obj).to.have.all.keys(keys);
+      });
     })
-
     it('should get the book title', function() {
       // Todo change this to just return a promise
       return result
@@ -45,7 +44,6 @@ describe('parse-epub', function() {
           expect(title).to.equal('Moby Dick; Or, The Whale');
         });
     });
-
     it('should get authors', function() {
       return result.then((obj) => {
         expect(obj).to.have.property('authors');
@@ -54,7 +52,6 @@ describe('parse-epub', function() {
         expect(obj.authors[0]).to.equal('Herman Melville');
       });
     });
-
     it('should have rights', function() {
       return result.then((obj) => {
         expect(obj).to.have.property('rights');
@@ -80,5 +77,20 @@ describe('parse-epub', function() {
         expect(subject).to.match(/[Ww]haling/);
       });
     });
+    it('should hash the data properly', function() {
+      const expectedHash = 'E8957027BC31E5F97CCAC780D64EE974'.toLowerCase();
+      return result.then(({ hash }) => {
+        expect(hash).to.equal(expectedHash);
+      })
+    });
+    it('should be able to find the table of contents', function() {
+      return result.then(({ chapters }) => {
+        expect(chapters).to.be.an('array').that.is.not.empty;
+        expect(chapters).to.satisfy(function (arr) {
+          return arr.every(s => typeof s === 'string');
+        })
+      })
+    })
+
   });
 });
